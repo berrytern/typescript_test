@@ -1,0 +1,47 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev:server": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@ava/typescript": "^1.1.1",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/express": "^4.17.8",
+    "@types/jest": "^26.0.14",
+    "jest": "^26.5.3",
+    "sinon": "^9.2.0",
+    "ts-jest": "^26.4.1",
+    "ts-node-dev": "^1.0.0-pre.63",
+    "typescript": "^4.0.3"
+  },
+  "dependencies": {
+    "@types/jwt-simple": "^0.5.33",
+    "@types/mongoose": "^5.7.36",
+    "@types/node-fetch": "^2.5.7",
+    "@types/sinon": "^9.0.8",
+    "@types/supertest": "^2.0.10",
+    "body-parser": "^1.19.0",
+    "consign": "^0.1.6",
+    "express": "^4.17.1",
+    "jwt-simple": "^0.5.6",
+    "mongoose": "^5.10.9",
+    "node-fetch": "^2.6.1",
+    "superagent": "^6.1.0",
+    "supertest": "^5.0.0"
+  },
+  "ava": {
+    "typescript": {
+      "extensions": [
+        "ts",
+        "tsx"
+      ],
+      "rewritePaths": {
+        "src/": "build/"
+      }
+    }
+  }
+}
