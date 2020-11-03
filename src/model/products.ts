@@ -1,7 +1,6 @@
 import mongoose,{Document, Schema} from 'mongoose'
 
-export interface IProduct extends Document{
-    _id:object,
+interface IProduct extends Document{
     name:string,
     desc:string,
     price:number

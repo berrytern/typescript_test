@@ -1,9 +1,12 @@
 import express from 'express';
-import database from './config/database';
-import middlewares from './config/middleware'
-import routes from './routes'
+import bodyparser from 'body-parser';
+import productsRoute from './controller/products';
 
 const app=express();
-app.use(middlewares)
-app.use('/',routes)
+//middlewares
+app.use(bodyparser.urlencoded({extended:true}))
+app.use(bodyparser.json())
+//routes
+app.use('/products',productsRoute)
+
 export default app

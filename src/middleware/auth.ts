@@ -1,6 +1,6 @@
 import {Request,Response,NextFunction} from 'express';
 import jwt from 'jwt-simple';
-const authSecret:string="dsdsd"
+
 const auth=(req:Request,res:Response,next:NextFunction)=>{
     return (req:Request,res:Response,next:NextFunction)=>{
         console.log('on auth')
@@ -11,8 +11,8 @@ const auth=(req:Request,res:Response,next:NextFunction)=>{
             if(!token){;res.status(401).send}
             else{
                 try{
-                    req.user=jwt.decode(token, authSecret);
-                    console.log(jwt.decode(token, authSecret),req.user);
+                    req.user=jwt.decode(token, process.env.authSecret);
+                    console.log(jwt.decode(token, process.env.authSecret),req.user);
                     next()
                 }catch(err){
                     res.status(401).send()
