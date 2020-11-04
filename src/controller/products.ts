@@ -7,7 +7,6 @@ router.get('/', async(req, res) => {
     const products=await Product.find()
     res.status(200).json(products)
 });
-
 router.post('/create',async(req,res)=>{
     console.log('route /create --post')
     console.log(req.body)
