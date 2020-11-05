@@ -1,11 +1,11 @@
 import mongoose,{Document, Schema} from 'mongoose'
 
-interface IProduct extends Document{
+
+export interface IProduct extends Document{
     name:string,
     desc:string,
     price:number
 }
-
 const ProductSchema:Schema= new Schema({
     name:{
         type: String,
@@ -21,4 +21,4 @@ const ProductSchema:Schema= new Schema({
         require:true,
     }
 })
-export default mongoose.model<IProduct>('product',ProductSchema)
+export const Product= mongoose.model<IProduct>('product',ProductSchema)

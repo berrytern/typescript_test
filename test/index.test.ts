@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import app from '../src/app'
 import {describe, expect, test} from '@jest/globals'
 import mongoose from 'mongoose';
-import Product from '../src/model/products';
+import {Product} from '../src/model/products';
 import jwt from 'jwt-simple';
 const db=mongoose.connect('mongodb://localhost:27017/products', { useUnifiedTopology: true, useNewUrlParser: true});
 //const fs=jest.createMockFromModule('fs')
@@ -15,13 +15,21 @@ const defaultProduct={
   desc:'Product description',
   price:300,
 }
+const defaultProduct2={
+  name:'Tênis',
+  desc:'material de couro, duradouro',
+  price:120,
+}
 let token:string;
 //const auth
 describe("Test Api", () => {
   afterEach(()=>{jest.clearAllMocks()})
   describe("Models", () => {
     describe("Product",()=>{
-      beforeEach(async()=>{
+      beforeAll(async()=>{
+        await Product.deleteOne({name:defaultProduct.name})
+      })
+      afterAll(async()=>{
         await Product.deleteOne({name:defaultProduct.name})
       })
       it("Create Product", async done => {
@@ -31,7 +39,7 @@ describe("Test Api", () => {
         expect(response).toHaveProperty('name')
         expect(response).toHaveProperty('desc')
         expect(response).toHaveProperty('price')
-        expect(typeof(response.name)).toContain('string')
+        expect(typeof(response.name)).toBe('string')
         expect(typeof(response.desc)).toBe('string')
         expect(typeof(response.price)).toBe('number')
         done()
@@ -56,9 +64,6 @@ describe("Test Api", () => {
         }).catch(err=>done(err))
         expect(find).toBeCalledTimes(1)
         expect(find).toBeCalledWith()
-      })
-      afterEach(async()=>{
-        await Product.deleteOne({name:defaultProduct.name})
       })
     });
   });
@@ -92,24 +97,269 @@ describe("Test Api", () => {
       })
     })
     describe("Product",()=>{
-      it("GET method", async done => {
-        return request(app)
-          .get('/products')
-          .then((res)=>{
-            expect(res.status).toBe(200);
-            done();
-          }).catch(err=>done(err));
-      });
-      it("POST method", done => {
-        return request(app)
-          .post("/products/create")
-          .send(defaultProduct) // x-www-form-urlencoded
-          .set('Accept', 'application/json')
-          .then((res)=>{
-            expect(res.status).toBe(201);
-            done();
-          }).catch(err=>done(err));
-      });
+      beforeAll(async()=>{
+        await Product.deleteOne({name:defaultProduct.name})
+      })
+      afterAll(async()=>{
+        await Product.deleteOne({name:defaultProduct.name})
+      })
+      describe('Create',()=>{
+        it("should test creation with empty", done => {
+          return request(app)
+            .post("/products")
+            .send() // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation with {}", done => {
+          return request(app)
+            .post("/products")
+            .send() // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation without name", done => {
+          let {name,...without_name}= defaultProduct
+          return request(app)
+            .post("/products")
+            .send(without_name) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation without price", done => {
+          let {price,...without_price}= defaultProduct
+          return request(app)
+            .post("/products")
+            .send(without_price) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation without desc", done => {
+          let {desc,...without_desc}= defaultProduct
+          return request(app)
+            .post("/products")
+            .send(without_desc) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation with name", done => {
+          let {price,desc, ...with_only_name}= defaultProduct
+          return request(app)
+            .post("/products")
+            .send(with_only_name) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation with price", done => {
+          let {name, desc, ...with_only_price}= defaultProduct
+          return request(app)
+            .post("/products")
+            .send(with_only_price) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation with desc", done => {
+          let {name, price, ...with_only_desc}= defaultProduct
+          return request(app)
+            .post("/products")
+            .send(with_only_desc) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation with null", done => {
+          const param= {name:null, price:null, desc:null}
+          return request(app)
+            .post("/products")
+            .send(param) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should test creation with empty string", done => {
+          const param= {name:'', price:'', desc:''}
+          return request(app)
+            .post("/products")
+            .send(param) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        });
+        it("should create a product",done=>{
+          return request(app)
+            .post("/products")
+            .send(defaultProduct) // x-www-form-urlencoded
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(201);
+              done();
+            }).catch(err=>done(err));
+        })
+      })
+      describe("Get",()=>{
+        describe('One',()=>{
+          it("should get one with", async done => {
+            return request(app)
+              .get("/products")
+              .type('form')
+              .send({name:defaultProduct.name})
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res).toHaveProperty('body')
+                expect(res.body).toBeDefined()
+                expect(res.body).toHaveProperty('_id')
+                expect(res.body).toHaveProperty('name',defaultProduct.name)
+                expect(res.body).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body).toHaveProperty('price',defaultProduct.price)
+                done();
+              }).catch(err=>done(err));
+          });
+          it("should get one", async done => {
+            return request(app)
+              .get("/products")
+              .type("form")
+              .send({desc:defaultProduct.desc})
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res).toHaveProperty('body')
+                expect(res.body).toBeDefined()
+                expect(res.body).toHaveProperty('_id')
+                expect(res.body).toHaveProperty('name',defaultProduct.name)
+                expect(res.body).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body).toHaveProperty('price',defaultProduct.price)
+                done();
+              }).catch(err=>done(err));
+          });
+          it("should get one", async done => {
+            return request(app)
+              .get('/products')
+              .type('form')
+              .send({price:defaultProduct.price})
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res).toHaveProperty('body')
+                expect(res.body).toBeDefined()
+                expect(res.body).toHaveProperty('_id')
+                expect(res.body).toHaveProperty('name',defaultProduct.name)
+                expect(res.body).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body).toHaveProperty('price',defaultProduct.price)
+                done();
+              }).catch(err=>done(err));
+          });
+        })
+        describe('All',()=>{
+          beforeAll(async()=>{
+            await Product.deleteOne(defaultProduct)
+            await Product.deleteOne(defaultProduct2)
+            await new Product(defaultProduct).save()
+            await new Product(defaultProduct2).save()
+          })
+          
+          it("should get all with name", async done => {
+            return request(app)
+              .get("/products/all")
+              .type("form")
+              .send({name:defaultProduct.name})
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveLength(1)
+                expect(res.body[0]).toHaveProperty('_id')
+                expect(res.body[0]).toHaveProperty('name',defaultProduct.name)
+                expect(res.body[0]).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body[0]).toHaveProperty('price',defaultProduct.price)
+                done();
+              }).catch(err=>done(err));
+          });
+          it("should get all with desc", async done => {
+            return request(app)
+              .get("/products/all")
+              .type("form")
+              .send({desc:defaultProduct.desc})
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveLength(1)
+                expect(res.body[0]).toHaveProperty('_id')
+                expect(res.body[0]).toHaveProperty('name',defaultProduct.name)
+                expect(res.body[0]).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body[0]).toHaveProperty('price',defaultProduct.price)
+                done();
+              }).catch(err=>done(err));
+          });
+          it("should get all with price", async done => {
+            return request(app)
+              .get("/products/all")
+              .type("form")
+              .send({price:defaultProduct.price})
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveLength(1)
+                expect(res.body[0]).toHaveProperty('_id')
+                expect(res.body[0]).toHaveProperty('name',defaultProduct.name)
+                expect(res.body[0]).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body[0]).toHaveProperty('price',defaultProduct.price)
+                done();
+              }).catch(err=>done(err));
+          });
+          it("should get all", async done => {
+            return request(app)
+              .get("/products/all")
+              .type("form")
+              .send()
+              .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveLength(2)
+                expect(res.body[0]).toHaveProperty('_id')
+                expect(res.body[0]).toHaveProperty('name',defaultProduct.name)
+                expect(res.body[0]).toHaveProperty('desc',defaultProduct.desc)
+                expect(res.body[0]).toHaveProperty('price',defaultProduct.price)
+                expect(res.body[1]).toHaveProperty('_id')
+                expect(res.body[1]).toHaveProperty('name',defaultProduct2.name)
+                expect(res.body[1]).toHaveProperty('desc',defaultProduct2.desc)
+                expect(res.body[1]).toHaveProperty('price',defaultProduct2.price)
+                done();
+              }).catch(err=>done(err));
+          });
+        })
+      })
+      describe("Delete",()=>{
+        it("should delete a product",done=>{
+          return request(app)
+            .delete("/products")
+            .send({name:defaultProduct.name}) // x-www-form-urlencoded
+            .set("Accept", "application/json")
+            .then((res)=>{
+              expect(res.status).toBe(200);
+              done();
+            }).catch(err=>done(err));
+        })
+      })
     })
   })
   //test.todo('algo')
