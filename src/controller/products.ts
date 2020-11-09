@@ -13,7 +13,6 @@ const router:Router = express.Router();
 router.get('/', async(req, res) => {
 
     const { name,desc ,price }=req.body;
-    console.log(name,desc ,price)
     if(!name && !desc && !price){
         res.status(400).send()
     }else{
@@ -53,7 +52,6 @@ router.get('/all', async(req, res) => {
         products = await Product.find(props).limit(limit).exec()
   
     }
-    console.log(products)
     res.status(200).send(products)
     
 });
@@ -78,15 +76,10 @@ router.delete('/',async(req,res)=>{
         res.status(400).send()
     }else{
         const deleted = await Product.deleteOne({name:name})
-        console.log(deleted)
         if(Object.keys(deleted).includes('deletedCount')){
-            if(deleted["deletedCount"]==1){
-                res.send()
-            }else{
-                res.status(400).send()
-            }
+            res.status(204).send()
         }else{
-            res.status(400).send()
+            res.status(500).send()
         }
        
     }

@@ -8,7 +8,7 @@ import {describe, expect, test} from '@jest/globals'
 import mongoose from 'mongoose';
 import {Product} from '../src/model/products';
 import jwt from 'jwt-simple';
-const db=mongoose.connect('mongodb://localhost:27017/products', { useUnifiedTopology: true, useNewUrlParser: true});
+
 //const fs=jest.createMockFromModule('fs')
 const defaultProduct={
   name:'Default',
@@ -21,8 +21,12 @@ const defaultProduct2={
   price:120,
 }
 let token:string;
+
 //const auth
 describe("Test Api", () => {
+  beforeAll(()=>{
+    const db=mongoose.connect('mongodb://localhost:27017/products', { useUnifiedTopology: true, useNewUrlParser: true});
+  })
   afterEach(()=>{jest.clearAllMocks()})
   describe("Models", () => {
     describe("Product",()=>{
@@ -183,7 +187,7 @@ describe("Test Api", () => {
           let {name, price, ...with_only_desc}= defaultProduct
           return request(app)
             .post("/products")
-            .send(with_only_desc) // x-www-form-urlencoded
+            .send(with_only_desc) 
             .set('Accept', 'application/json')
             .then((res)=>{
               expect(res.status).toBe(400);
@@ -194,7 +198,7 @@ describe("Test Api", () => {
           const param= {name:null, price:null, desc:null}
           return request(app)
             .post("/products")
-            .send(param) // x-www-form-urlencoded
+            .send(param) 
             .set('Accept', 'application/json')
             .then((res)=>{
               expect(res.status).toBe(400);
@@ -205,7 +209,7 @@ describe("Test Api", () => {
           const param= {name:'', price:'', desc:''}
           return request(app)
             .post("/products")
-            .send(param) // x-www-form-urlencoded
+            .send(param) 
             .set('Accept', 'application/json')
             .then((res)=>{
               expect(res.status).toBe(400);
@@ -215,7 +219,7 @@ describe("Test Api", () => {
         it("should create a product",done=>{
           return request(app)
             .post("/products")
-            .send(defaultProduct) // x-www-form-urlencoded
+            .send(defaultProduct) 
             .set('Accept', 'application/json')
             .then((res)=>{
               expect(res.status).toBe(201);
@@ -349,13 +353,32 @@ describe("Test Api", () => {
         })
       })
       describe("Delete",()=>{
-        it("should delete a product",done=>{
+        it("should test delete with empty",done=>{
           return request(app)
             .delete("/products")
-            .send({name:defaultProduct.name}) // x-www-form-urlencoded
+            .send() // x-www-form-urlencoded
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        })
+        it("should test delete with name equal null",done=>{
+          return request(app)
+            .delete("/products")
+            .send({name:null})
+            .set("Accept", "application/json") 
+            .then((res)=>{
+              expect(res.status).toBe(400);
+              done();
+            }).catch(err=>done(err));
+        })
+        it("should delete",done=>{
+          return request(app)
+            .delete("/products")
+            .send({name:defaultProduct.name}) 
             .set("Accept", "application/json")
             .then((res)=>{
-              expect(res.status).toBe(200);
+              expect(res.status).toBe(204);
               done();
             }).catch(err=>done(err));
         })

@@ -11,7 +11,6 @@ const auth=(req:Request,res:Response,next:NextFunction)=>{
         else{
             try{
                 req.params=jwt.decode(token, process.env.authSecret);
-                console.log(jwt.decode(token, process.env.authSecret),req.params);
                 next()
             }catch(err){
                 res.status(401).send()
