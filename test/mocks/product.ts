@@ -1,6 +1,5 @@
 'use strict'
 import crypto from "crypto"
-
 export interface IProduct{
     _id:any,
     name:string,
@@ -98,7 +97,7 @@ const deleteOne:deleted=(arg0)=>{
     DBProducts=DBProducts.filter(i=>{!(i.name===deleted.name&&i.desc===deleted.desc&&i.price===deleted.price)})
     return {deletedCount:Object.keys(deleted).length>0?1:0}
 }
-export const find=[defaultProduct,defaultProduct2]
+
 export const Mock:IMock={
     create:create,
     find:findAll,
