@@ -10,7 +10,7 @@ const auth=(req:Request,res:Response,next:NextFunction)=>{
         if(!token){res.status(401).send()}
         else{
             try{
-                req.params=jwt.decode(token, process.env.authSecret);
+                req.params=jwt.decode(token, process.env.authSecret|| '');
                 next()
             }catch(err){
                 res.status(401).send()

@@ -8,18 +8,11 @@ import {describe, expect, test} from '@jest/globals'
 import mongoose from 'mongoose';
 import {Product} from '../src/model/products';
 import jwt from 'jwt-simple';
-
+import {defaultProduct,defaultProduct2} from './mocks/product'
+const mock=false
+const appMock = app(mock)
 //const fs=jest.createMockFromModule('fs')
-const defaultProduct={
-  name:'Default',
-  desc:'Product description',
-  price:300,
-}
-const defaultProduct2={
-  name:'Tênis',
-  desc:'material de couro, duradouro',
-  price:120,
-}
+
 let token:string;
 
 //const auth
@@ -74,14 +67,14 @@ describe("Test Api", () => {
   describe("Controllers",()=>{
     describe("Auth",()=>{
       it("not.authorizarion-Header",async(done)=>{
-        return request(app)
+        return request(appMock)
           .get('/auth').then(res=>{
             expect(res).toHaveProperty('status',400)
             done()
           }).catch(err=>done(err));
       })
       it("with.authorizarion-Header",async(done)=>{
-        return request(app)
+        return request(appMock)
           .get('/auth')
             .set('Authorization','Bearer ')  
           .then(res=>{
@@ -91,7 +84,7 @@ describe("Test Api", () => {
       })
       it("with.token",async(done)=>{
         console.log('token',jwt.encode({user:1,exp:Math.floor(Date.now()/1000)+60*20},process.env.authSecret||""))
-        return request(app)
+        return request(appMock)
           .get('/auth')
             .set('Authorization','Bearer '+jwt.encode({user:1,exp:Math.floor(Date.now()/1000)+60*20},process.env.authSecret||""))
           .then(res=>{
@@ -101,15 +94,20 @@ describe("Test Api", () => {
       })
     })
     describe("Product",()=>{
-      beforeAll(async()=>{
-        await Product.deleteOne({name:defaultProduct.name})
-      })
-      afterAll(async()=>{
-        await Product.deleteOne({name:defaultProduct.name})
-      })
+      if(!mock){
+         beforeAll(async()=>{
+          await Product.deleteOne({name:defaultProduct.name})
+          await Product.deleteOne({name:defaultProduct2.name})
+        })
+        afterAll(async()=>{
+          await Product.deleteOne({name:defaultProduct.name})
+          await Product.deleteOne({name:defaultProduct2.name})
+        })
+      }
+     
       describe('Create',()=>{
         it("should test creation with empty", done => {
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send() // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -119,7 +117,7 @@ describe("Test Api", () => {
             }).catch(err=>done(err));
         });
         it("should test creation with {}", done => {
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send() // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -130,7 +128,7 @@ describe("Test Api", () => {
         });
         it("should test creation without name", done => {
           let {name,...without_name}= defaultProduct
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(without_name) // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -141,7 +139,7 @@ describe("Test Api", () => {
         });
         it("should test creation without price", done => {
           let {price,...without_price}= defaultProduct
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(without_price) // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -152,7 +150,7 @@ describe("Test Api", () => {
         });
         it("should test creation without desc", done => {
           let {desc,...without_desc}= defaultProduct
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(without_desc) // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -163,7 +161,7 @@ describe("Test Api", () => {
         });
         it("should test creation with name", done => {
           let {price,desc, ...with_only_name}= defaultProduct
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(with_only_name) // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -174,7 +172,7 @@ describe("Test Api", () => {
         });
         it("should test creation with price", done => {
           let {name, desc, ...with_only_price}= defaultProduct
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(with_only_price) // x-www-form-urlencoded
             .set('Accept', 'application/json')
@@ -185,7 +183,7 @@ describe("Test Api", () => {
         });
         it("should test creation with desc", done => {
           let {name, price, ...with_only_desc}= defaultProduct
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(with_only_desc) 
             .set('Accept', 'application/json')
@@ -196,7 +194,7 @@ describe("Test Api", () => {
         });
         it("should test creation with null", done => {
           const param= {name:null, price:null, desc:null}
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(param) 
             .set('Accept', 'application/json')
@@ -207,7 +205,7 @@ describe("Test Api", () => {
         });
         it("should test creation with empty string", done => {
           const param= {name:'', price:'', desc:''}
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(param) 
             .set('Accept', 'application/json')
@@ -217,9 +215,19 @@ describe("Test Api", () => {
             }).catch(err=>done(err));
         });
         it("should create a product",done=>{
-          return request(app)
+          return request(appMock)
             .post("/products")
             .send(defaultProduct) 
+            .set('Accept', 'application/json')
+            .then((res)=>{
+              expect(res.status).toBe(201);
+              done();
+            }).catch(err=>done(err));
+        })
+        it("should create a product",done=>{
+          return request(appMock)
+            .post("/products")
+            .send(defaultProduct2) 
             .set('Accept', 'application/json')
             .then((res)=>{
               expect(res.status).toBe(201);
@@ -230,7 +238,7 @@ describe("Test Api", () => {
       describe("Get",()=>{
         describe('One',()=>{
           it("should get one with", async done => {
-            return request(app)
+            return request(appMock)
               .get("/products")
               .type('form')
               .send({name:defaultProduct.name})
@@ -246,7 +254,7 @@ describe("Test Api", () => {
               }).catch(err=>done(err));
           });
           it("should get one", async done => {
-            return request(app)
+            return request(appMock)
               .get("/products")
               .type("form")
               .send({desc:defaultProduct.desc})
@@ -262,7 +270,7 @@ describe("Test Api", () => {
               }).catch(err=>done(err));
           });
           it("should get one", async done => {
-            return request(app)
+            return request(appMock)
               .get('/products')
               .type('form')
               .send({price:defaultProduct.price})
@@ -287,7 +295,7 @@ describe("Test Api", () => {
           })
           
           it("should get all with name", async done => {
-            return request(app)
+            return request(appMock)
               .get("/products/all")
               .type("form")
               .send({name:defaultProduct.name})
@@ -302,7 +310,7 @@ describe("Test Api", () => {
               }).catch(err=>done(err));
           });
           it("should get all with desc", async done => {
-            return request(app)
+            return request(appMock)
               .get("/products/all")
               .type("form")
               .send({desc:defaultProduct.desc})
@@ -317,7 +325,7 @@ describe("Test Api", () => {
               }).catch(err=>done(err));
           });
           it("should get all with price", async done => {
-            return request(app)
+            return request(appMock)
               .get("/products/all")
               .type("form")
               .send({price:defaultProduct.price})
@@ -332,7 +340,7 @@ describe("Test Api", () => {
               }).catch(err=>done(err));
           });
           it("should get all", async done => {
-            return request(app)
+            return request(appMock)
               .get("/products/all")
               .type("form")
               .send()
@@ -354,7 +362,7 @@ describe("Test Api", () => {
       })
       describe("Delete",()=>{
         it("should test delete with empty",done=>{
-          return request(app)
+          return request(appMock)
             .delete("/products")
             .send() // x-www-form-urlencoded
             .then((res)=>{
@@ -363,7 +371,7 @@ describe("Test Api", () => {
             }).catch(err=>done(err));
         })
         it("should test delete with name equal null",done=>{
-          return request(app)
+          return request(appMock)
             .delete("/products")
             .send({name:null})
             .set("Accept", "application/json") 
@@ -373,7 +381,7 @@ describe("Test Api", () => {
             }).catch(err=>done(err));
         })
         it("should delete",done=>{
-          return request(app)
+          return request(appMock)
             .delete("/products")
             .send({name:defaultProduct.name}) 
             .set("Accept", "application/json")
