@@ -1,93 +1,93 @@
-import express,{Router} from 'express';
-import { IProduct} from '../model/products';
-import db from '../config/database'
-import auth from '../middleware/auth'
-import {Model,Document} from 'mongoose'
-import {IMock} from '../../test/mocks/product'
+import {Request, Response} from 'express'
+import { IProduct } from '../models/products';
+import {Model, } from 'mongoose'
+
 interface IOptProduct {
-    name?:string
-    desc?:string
-    price?:number
-} 
-
-const Rotas = (Product:Model<IProduct>| IMock
-    
-)=>{
-    const router = express.Router()
-    router.get('/', async(req, res) => {
-
-        const { name,desc ,price }=req.body;
-        if(!name && !desc && !price){
+    name?: string
+    desc?: string
+    price?: number
+}
+class ProductsController {
+    Product:Model<IProduct>
+    constructor(Product:Model<IProduct>) {
+      this.Product = Product;
+    }
+    async get(req:Request, res:Response) {
+        const { name, desc, price } = req.body;
+        if (!name && !desc && !price) {
             res.status(400).send()
-        }else{
-            let props:IOptProduct={}
-            if(!!name){
-                props['name']=name
-            }
-            if(!!desc){
-                props['desc']=desc
-            }
-            if(!!price){
-                props['price']=price
-            }
-            const products=await Product.findOne(props)
-            res.status(200).json(products)
+        } else {
+            const { name, desc, price } = req.body;
+        let props: IOptProduct = {}
+        if (!!name) {
+            props['name'] = name
         }
-        
-        
-    });
-    router.get('/all', async(req, res) => {
-        const { name,desc ,price,limit}=req.body;
-        let props:IOptProduct={}
-        if(!!name){
-            props['name']=name
+        if (!!desc) {
+            props['desc'] = desc
         }
-        if(!!desc){
-            props['desc']=desc
-        }
-        if(!!price){
-            props['price']=price
+        if (!!price) {
+            props['price'] = price
         }
         let products
-        if(!limit){
-            products = await Product.find(props)
-        }else{
-            products = await Product.find(props)
-      
-        }
+        products = await this.Product.findOne(props)
         res.status(200).send(products)
-        
-    });
-    router.post('/',async(req,res)=>{
-        const { name,desc ,price }=req.body;
-        if(!name || !desc || !price){
+        }
+    }
+    async getById(req:Request, res:Response) {
+        const {
+            params: { id }
+        } = req;
+
+        try {
+            const product = await this.Product.findOne({ _id: id });
+            res.send(product);
+        } catch (err) {
+            res.status(400).send(err.message);
+        }
+    }
+    async getall(req:Request, res:Response){
+        const { name, desc, price} = req.body;
+        let props: IOptProduct = {}
+        if (!!name) {
+            props['name'] = name
+        }
+        if (!!desc) {
+            props['desc'] = desc
+        }
+        if (!!price) {
+            props['price'] = price
+        }
+        const products = await this.Product.find(props)
+
+        res.status(200).send(products)
+    }
+    async post(req:Request, res:Response) {
+        const { name, desc, price } = req.body;
+        if (!name || !desc || !price) {
             res.status(400).send()
-        }else{
-            const created = await Product.create({name:name,desc:desc,price:price})
-            if(created){
+        } else {
+            const created = await this.Product.create({ name: name, desc: desc, price: price })
+            if (created) {
                 res.status(201).send()
-            }else{
+            } else {
                 res.status(500).send()
             }
         }
-    });
-    router.delete('/',async(req,res)=>{
-        const { name }=req.body;
-        if(!name){
+    }
+    async delete(req:Request, res:Response){
+        const { name } = req.body;
+        if (!name) {
             res.status(400).send()
-        }else{
-            const deleted = await Product.deleteOne({name:name})
+        } else {
+            const deleted = await this.Product.deleteOne({ name: name })
             console.log('deleted', deleted)
-            if(Object.keys(deleted).includes('deletedCount')){
+            if (Object.keys(deleted).includes('deletedCount')) {
                 res.status(204).send()
-            }else{
+            } else {
                 res.status(500).send()
             }
-           
+    
         }
-    })
-    return router;
-};
-
-
-export default Rotas;
+    }
+}
+export default ProductsController
